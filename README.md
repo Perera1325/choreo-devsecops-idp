@@ -202,23 +202,23 @@ OPENAI_API_KEY="your-openai-key"
 
 ## 📸 Platform Screenshots
 
-Here is a visual walk-through of the Internal Developer Platform in action:
+> 🌐 All screenshots below are **real captures** from the live hosted platform at [https://code-to-production-level.web.app](https://code-to-production-level.web.app)
 
 ### 1. Unified Control Plane Dashboard
 A glassmorphic dashboard showcasing real-time container states, active deployments, and automated self-healing events.
 ![DevSecOps Dashboard](docs/screenshots/dashboard.png)
 
-### 2. Live Telemetry & Real-Time Monitoring
-Direct metric scraping and dual-sync Firestore logs keeping the UI telemetry in lock-step with EKS clusters.
-![Metrics and Telemetry](docs/screenshots/telemetry.png)
+### 2. Services & Kubernetes Deployments View
+Live deployment cards for all microservices — showing replica counts, CPU/memory usage, health status and one-click remediation controls.
+![Services and Deployments](docs/screenshots/services.png)
 
-### 3. Integrated Security Audits (SonarQube & Trivy)
-Continuous delivery integration providing SAST scan metrics and container package vulnerability details on the fly.
-![Vulnerability Scans](docs/screenshots/sast_scan.png)
-
-### 4. Interactive DevOps Troubleshooting Assistant
+### 3. Interactive DevOps Troubleshooting Assistant
 An AI chatbot responding dynamically to platform failures, analyzing pods, and outputting remediated Kubernetes YAML changes.
 ![DevOps AI Assistant](docs/screenshots/chatbot.png)
+
+### 4. Full Platform Overview (Scrolled)
+Complete end-to-end view of the platform showcasing all integrated DevSecOps capabilities in one unified interface.
+![Full Platform View](docs/screenshots/fullpage.png)
 
 ---
 
