@@ -1,9 +1,9 @@
 # Enterprise-Grade AI-Powered DevSecOps Internal Developer Platform (IDP)
 
-[![CI/CD Status](https://img.shields.io/badge/CI%2FCD-Pipeline_Passing-emerald?style=for-the-badge&logo=github-actions)](https://github.com/Perera1325/tourism-platform)
-[![Security Scan](https://img.shields.io/badge/Trivy-Secure-emerald?style=for-the-badge&logo=security-scorecard)](https://github.com/Perera1325/tourism-platform)
-[![Code Quality](https://img.shields.io/badge/SonarQube-Quality_Gate_Passed-emerald?style=for-the-badge&logo=sonarqube)](https://github.com/Perera1325/tourism-platform)
-[![GitOps](https://img.shields.io/badge/GitOps-ArgoCD_Synced-indigo?style=for-the-badge&logo=argo)](https://github.com/Perera1325/tourism-platform)
+[![CI/CD Status](https://img.shields.io/badge/CI%2FCD-Pipeline_Passing-emerald?style=for-the-badge&logo=github-actions)](https://github.com/Perera1325/choreo-devsecops-idp)
+[![Security Scan](https://img.shields.io/badge/Trivy-Secure-emerald?style=for-the-badge&logo=security-scorecard)](https://github.com/Perera1325/choreo-devsecops-idp)
+[![Code Quality](https://img.shields.io/badge/SonarQube-Quality_Gate_Passed-emerald?style=for-the-badge&logo=sonarqube)](https://github.com/Perera1325/choreo-devsecops-idp)
+[![GitOps](https://img.shields.io/badge/GitOps-ArgoCD_Synced-indigo?style=for-the-badge&logo=argo)](https://github.com/Perera1325/choreo-devsecops-idp)
 
 An autonomous software delivery platform built to automate the entire software engineering lifecycle from local code commits to secure cloud-native production deployments. Powered by **WSO2 API Manager**, **WSO2 Identity Server**, **Kubernetes (EKS)**, and an **AI-driven diagnostics & auto-healing engine**, this platform represents modern enterprise GitOps and DevSecOps engineering.
 

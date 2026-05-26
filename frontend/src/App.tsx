@@ -458,7 +458,7 @@ export default function App() {
         <header className="h-20 border-b border-slate-800 flex items-center justify-between px-8 bg-slate-950/70 backdrop-blur-md">
           <div className="flex items-center space-x-2">
             <span className="text-xs text-slate-500 font-mono">Workspace:</span>
-            <span className="text-xs px-2.5 py-1 rounded bg-slate-900 border border-slate-800 font-mono text-cyan-400">Perera1325/tourism-platform</span>
+            <span className="text-xs px-2.5 py-1 rounded bg-slate-900 border border-slate-800 font-mono text-cyan-400">Perera1325/choreo-devsecops-idp</span>
           </div>
           <div className="flex items-center space-x-4">
             <span className="flex items-center space-x-1.5 text-xs text-slate-400 bg-slate-900 px-3 py-1.5 rounded-full border border-slate-800">

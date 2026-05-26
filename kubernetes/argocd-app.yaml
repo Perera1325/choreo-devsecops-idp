@@ -8,7 +8,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/Perera1325/tourism-platform.git'
+    repoURL: 'https://github.com/Perera1325/choreo-devsecops-idp.git'
     targetRevision: HEAD
     path: helm/idp-platform
     helm:
