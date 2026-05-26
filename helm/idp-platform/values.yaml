@@ -8,7 +8,7 @@ backend:
   replicaCount: 2
   image:
     repository: perera1325/devsecops-backend
-    tag: "5c0ca0b537ffb28e1c34ee6412bba2c7b8f235ec"
+    tag: "ec1b2d834ae9a266aef600b4c82992428b1410b6"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -31,7 +31,7 @@ frontend:
   replicaCount: 1
   image:
     repository: perera1325/devsecops-frontend
-    tag: "5c0ca0b537ffb28e1c34ee6412bba2c7b8f235ec"
+    tag: "ec1b2d834ae9a266aef600b4c82992428b1410b6"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
