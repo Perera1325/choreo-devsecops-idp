@@ -1,0 +1,84 @@
+---
+- name: DevSecOps IDP Bastion & OS Configuration
+  hosts: bastions
+  become: true
+  tasks:
+    - name: Update apt repository cache
+      apt:
+        update_cache: yes
+
+    - name: Install prerequisite packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - unzip
+        state: present
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker APT repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Install Docker CE
+      apt:
+        name: docker-ce
+        state: present
+
+    - name: Download Kubernetes kubectl binary
+      get_url:
+        url: "https://dl.k8s.io/release/v1.28.2/bin/linux/amd64/kubectl"
+        dest: /usr/local/bin/kubectl
+        mode: '0755'
+
+    - name: Install Helm via script
+      shell: |
+        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+        chmod 700 get_helm.sh
+        ./get_helm.sh
+      args:
+        creates: /usr/local/bin/helm
+
+- name: Configure WSO2 Clusters & Metadata DB Connection
+  hosts: wso2_servers
+  become: true
+  vars:
+    db_host: "devsecops-idp-db.c123456789.us-east-1.rds.amazonaws.com"
+    db_port: 5432
+    db_user: "wso2admin"
+    db_pass: "WSO2devsecopsPassword2026!"
+    apim_admin_user: "admin"
+    apim_admin_pass: "admin"
+  tasks:
+    - name: Ensure WSO2 configuration directory exists
+      file:
+        path: /etc/wso2/conf
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Compile and deploy WSO2 deployment.toml configuration
+      template:
+        src: templates/deployment.toml.j2
+        dest: /etc/wso2/conf/deployment.toml
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+      notify: Restart WSO2 Service
+
+  handlers:
+    - name: Restart WSO2 Service
+      systemd:
+        name: wso2server
+        state: restarted
+        enabled: yes
+      ignore_errors: yes

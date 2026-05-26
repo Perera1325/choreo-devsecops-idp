@@ -1,0 +1,108 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wso2apim-conf
+  namespace: wso2
+data:
+  # Mount carbon.xml or other custom configs if necessary
+  log4j2.properties: |
+    status = INFO
+    name = Log4j2Config
+    # Logging configuration details...
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wso2apim-service
+  namespace: wso2
+  labels:
+    app: wso2apim
+spec:
+  ports:
+    - name: servlet-http
+      port: 9763
+      targetPort: 9763
+    - name: servlet-https
+      port: 9443
+      targetPort: 9443
+    - name: pass-through-http
+      port: 8280
+      targetPort: 8280
+    - name: pass-through-https
+      port: 8243
+      targetPort: 8243
+  selector:
+    app: wso2apim
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: wso2apim
+  namespace: wso2
+spec:
+  serviceName: wso2apim-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wso2apim
+  template:
+    metadata:
+      labels:
+        app: wso2apim
+    spec:
+      containers:
+        - name: wso2apim
+          image: wso2/wso2am:4.2.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9763
+            - containerPort: 9443
+            - containerPort: 8280
+            - containerPort: 8243
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1000m"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+          env:
+            - name: DATABASE_URL
+              value: "jdbc:postgresql://devsecops-idp-db.c123456789.us-east-1.rds.amazonaws.com:5432/wso2am_db"
+            - name: DATABASE_USER
+              value: "wso2admin"
+            - name: DATABASE_PASSWORD
+              value: "WSO2devsecopsPassword2026!"
+          readinessProbe:
+            tcpSocket:
+              port: 9443
+            initialDelaySeconds: 90
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 9443
+            initialDelaySeconds: 120
+            periodSeconds: 15
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wso2apim-ingress
+  namespace: wso2
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: am.wso2.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: wso2apim-service
+                port:
+                  number: 9443

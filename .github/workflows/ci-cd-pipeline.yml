@@ -1,0 +1,127 @@
+name: DevSecOps CI/CD GitOps Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: write
+  security-events: write
+
+jobs:
+  code-quality:
+    name: Code Quality & SAST (SonarQube)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: './backend/package.json'
+
+      - name: Install Dependencies
+        run: |
+          npm --prefix ./backend install
+          npm --prefix ./frontend install
+
+      # Static Analysis Security Testing (SAST) using SonarQube CLI
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=Perera1325_devsecops-platform
+            -Dsonar.sources=backend/src,frontend/src
+            -Dsonar.tests=
+
+  build-and-secure:
+    name: Build Containers & Vulnerability Scan (Trivy)
+    needs: code-quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 1. Build and Scan Backend Image
+      - name: Build Backend Docker Image
+        run: |
+          docker build -t docker.io/Perera1325/devsecops-backend:${{ github.sha }} -t docker.io/Perera1325/devsecops-backend:latest ./backend
+
+      - name: Run Trivy Security Scan on Backend Container
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'docker.io/Perera1325/devsecops-backend:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1' # Fails build if HIGH or CRITICAL vulnerabilities are found
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Push Backend Image to Registry
+        if: success()
+        run: |
+          docker push docker.io/Perera1325/devsecops-backend:${{ github.sha }}
+          docker push docker.io/Perera1325/devsecops-backend:latest
+
+      # 2. Build and Scan Frontend Image
+      - name: Build Frontend Docker Image
+        run: |
+          docker build -t docker.io/Perera1325/devsecops-frontend:${{ github.sha }} -t docker.io/Perera1325/devsecops-frontend:latest ./frontend
+
+      - name: Run Trivy Security Scan on Frontend Container
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'docker.io/Perera1325/devsecops-frontend:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Push Frontend Image to Registry
+        if: success()
+        run: |
+          docker push docker.io/Perera1325/devsecops-frontend:${{ github.sha }}
+          docker push docker.io/Perera1325/devsecops-frontend:latest
+
+  gitops-reconcile:
+    name: GitOps Reconcile (Update Helm Tags)
+    needs: build-and-secure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Edit values.yaml with the new image tags (GitOps deployment trigger)
+      - name: Update Helm Chart Values File
+        run: |
+          sed -i 's/tag: .*/tag: "${{ github.sha }}"/g' ./helm/idp-platform/values.yaml
+
+      - name: Commit and Push GitOps Changes
+        run: |
+          git config --global user.name "gitops-bot"
+          git config --global user.email "gitops-bot@devsecops.platform"
+          git add ./helm/idp-platform/values.yaml
+          git commit -m "chore(gitops): update platform image tags to ${{ github.sha }} [skip ci]"
+          git push origin main

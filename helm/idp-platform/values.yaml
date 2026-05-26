@@ -1,0 +1,71 @@
+# Global Configurations
+global:
+  imageRegistry: docker.io
+  environment: production
+
+# Node.js Backend Service Setup
+backend:
+  replicaCount: 2
+  image:
+    repository: Perera1325/devsecops-backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 5000
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1024Mi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+  env:
+    GEMINI_API_KEY: ""
+    OPENAI_API_KEY: ""
+    WSO2_IS_JWKS_URL: "https://is.wso2.local/oauth2/jwks"
+    WSO2_APIM_URL: "https://am.wso2.local/api/am/publisher/v3"
+
+# React Frontend Dashboard Setup
+frontend:
+  replicaCount: 1
+  image:
+    repository: Perera1325/devsecops-frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Ingress Controller Rules
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  hosts:
+    - host: idp.devsecops.local
+      paths:
+        - path: /api
+          pathType: Prefix
+          serviceName: backend
+          servicePort: 5000
+        - path: /
+          pathType: Prefix
+          serviceName: frontend
+          servicePort: 80
+
+# Prometheus Monitoring Scrapes
+monitoring:
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    path: /metrics
