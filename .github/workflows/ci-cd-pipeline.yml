@@ -34,11 +34,11 @@ jobs:
 
       # Static Analysis - Runs only if SONAR_TOKEN is set
       - name: SonarQube Scan
-        if: secrets.SONAR_TOKEN != ''
-        uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        if: env.SONAR_TOKEN != ''
+        uses: sonarsource/sonarqube-scan-action@master
         with:
           args: >
             -Dsonar.projectKey=Perera1325_devsecops-platform
@@ -46,7 +46,9 @@ jobs:
             -Dsonar.tests=
 
       - name: Check SonarQube Configuration Status
-        if: secrets.SONAR_TOKEN == ''
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        if: env.SONAR_TOKEN == ''
         run: echo "SonarQube Token is missing. Skipping SAST scanning step."
 
   build-and-secure:
@@ -92,26 +94,37 @@ jobs:
 
       # Optional registry login
       - name: Login to Docker Hub
-        if: secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != ''
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        if: env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != ''
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Push Backend Image to Registry
-        if: secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != ''
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        if: env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != ''
         run: |
           docker push docker.io/Perera1325/devsecops-backend:${{ github.sha }}
           docker push docker.io/Perera1325/devsecops-backend:latest
 
       - name: Push Frontend Image to Registry
-        if: secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != ''
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        if: env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != ''
         run: |
           docker push docker.io/Perera1325/devsecops-frontend:${{ github.sha }}
           docker push docker.io/Perera1325/devsecops-frontend:latest
 
       - name: Check Docker Registry Status
-        if: secrets.DOCKERHUB_USERNAME == ''
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        if: env.DOCKERHUB_USERNAME == ''
         run: echo "Docker Hub credentials missing. Scanned containers locally, skipping registry push."
 
   gitops-reconcile:
@@ -124,6 +137,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # Edit values.yaml with the new image tags
       - name: Update Helm Chart Values File
         run: |
           sed -i 's/tag: .*/tag: "${{ github.sha }}"/g' ./helm/idp-platform/values.yaml
