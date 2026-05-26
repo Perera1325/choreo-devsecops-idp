@@ -65,12 +65,12 @@ jobs:
       # 1. Build and Scan Backend Image
       - name: Build Backend Docker Image
         run: |
-          docker build -t docker.io/Perera1325/devsecops-backend:${{ github.sha }} -t docker.io/Perera1325/devsecops-backend:latest ./backend
+          docker build -t docker.io/perera1325/devsecops-backend:${{ github.sha }} -t docker.io/perera1325/devsecops-backend:latest ./backend
 
       - name: Run Trivy Security Scan on Backend Container
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'docker.io/Perera1325/devsecops-backend:${{ github.sha }}'
+          image-ref: 'docker.io/perera1325/devsecops-backend:${{ github.sha }}'
           format: 'table'
           exit-code: '0'
           ignore-unfixed: true
@@ -80,12 +80,12 @@ jobs:
       # 2. Build and Scan Frontend Image
       - name: Build Frontend Docker Image
         run: |
-          docker build -t docker.io/Perera1325/devsecops-frontend:${{ github.sha }} -t docker.io/Perera1325/devsecops-frontend:latest ./frontend
+          docker build -t docker.io/perera1325/devsecops-frontend:${{ github.sha }} -t docker.io/perera1325/devsecops-frontend:latest ./frontend
 
       - name: Run Trivy Security Scan on Frontend Container
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'docker.io/Perera1325/devsecops-frontend:${{ github.sha }}'
+          image-ref: 'docker.io/perera1325/devsecops-frontend:${{ github.sha }}'
           format: 'table'
           exit-code: '0'
           ignore-unfixed: true
@@ -109,8 +109,8 @@ jobs:
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         if: env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != ''
         run: |
-          docker push docker.io/Perera1325/devsecops-backend:${{ github.sha }}
-          docker push docker.io/Perera1325/devsecops-backend:latest
+          docker push docker.io/perera1325/devsecops-backend:${{ github.sha }}
+          docker push docker.io/perera1325/devsecops-backend:latest
 
       - name: Push Frontend Image to Registry
         env:
@@ -118,8 +118,8 @@ jobs:
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         if: env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != ''
         run: |
-          docker push docker.io/Perera1325/devsecops-frontend:${{ github.sha }}
-          docker push docker.io/Perera1325/devsecops-frontend:latest
+          docker push docker.io/perera1325/devsecops-frontend:${{ github.sha }}
+          docker push docker.io/perera1325/devsecops-frontend:latest
 
       - name: Check Docker Registry Status
         env:
