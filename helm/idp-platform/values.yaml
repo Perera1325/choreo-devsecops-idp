@@ -7,7 +7,7 @@ global:
 backend:
   replicaCount: 2
   image:
-    repository: Perera1325/devsecops-backend
+    repository: perera1325/devsecops-backend
     tag: latest
     pullPolicy: IfNotPresent
   service:
@@ -30,7 +30,7 @@ backend:
 frontend:
   replicaCount: 1
   image:
-    repository: Perera1325/devsecops-frontend
+    repository: perera1325/devsecops-frontend
     tag: latest
     pullPolicy: IfNotPresent
   service:
