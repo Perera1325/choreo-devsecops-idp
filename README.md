@@ -7,6 +7,8 @@
 
 An autonomous software delivery platform built to automate the entire software engineering lifecycle from local code commits to secure cloud-native production deployments. Powered by **WSO2 API Manager**, **WSO2 Identity Server**, **Kubernetes (EKS)**, and an **AI-driven diagnostics & auto-healing engine**, this platform represents modern enterprise GitOps and DevSecOps engineering.
 
+🌐 **Live Hosted Platform**: [https://code-to-production-level.web.app](https://code-to-production-level.web.app)
+
 ---
 
 ## 🏛️ System Architecture
@@ -194,6 +196,78 @@ To enable real-world LLM support, supply an API key in the backend environment v
 GEMINI_API_KEY="your-gemini-key"
 # OR
 OPENAI_API_KEY="your-openai-key"
+```
+
+---
+
+## 📸 Platform Screenshots
+
+Here is a visual walk-through of the Internal Developer Platform in action:
+
+### 1. Unified Control Plane Dashboard
+A glassmorphic dashboard showcasing real-time container states, active deployments, and automated self-healing events.
+![DevSecOps Dashboard](docs/screenshots/dashboard.png)
+
+### 2. Live Telemetry & Real-Time Monitoring
+Direct metric scraping and dual-sync Firestore logs keeping the UI telemetry in lock-step with EKS clusters.
+![Metrics and Telemetry](docs/screenshots/telemetry.png)
+
+### 3. Integrated Security Audits (SonarQube & Trivy)
+Continuous delivery integration providing SAST scan metrics and container package vulnerability details on the fly.
+![Vulnerability Scans](docs/screenshots/sast_scan.png)
+
+### 4. Interactive DevOps Troubleshooting Assistant
+An AI chatbot responding dynamically to platform failures, analyzing pods, and outputting remediated Kubernetes YAML changes.
+![DevOps AI Assistant](docs/screenshots/chatbot.png)
+
+---
+
+## 🏗️ Core Code Highlights
+
+### 1. Dual-Sync (Firestore Cloud & Local WebSocket) Telemetry Client
+The frontend dynamically uses cloud Firestore listeners for remote hosting deployments, automatically falling back to standard local WebSockets for offline sandbox testing:
+```typescript
+// App.tsx
+useEffect(() => {
+  let unsubscribeDeployments: (() => void) | null = null;
+  try {
+    if (db && !import.meta.env.VITE_FIREBASE_API_KEY?.includes("mock")) {
+      // Connect to cloud database
+      unsubscribeDeployments = onSnapshot(collection(db, "deployments"), (snapshot) => {
+        const list: DeploymentInfo[] = [];
+        snapshot.forEach((doc) => {
+          list.push(doc.data() as DeploymentInfo);
+        });
+        if (list.length > 0) {
+          setDeployments(list);
+          setWsStatus('connected');
+        }
+      }, (err) => {
+        setupWebSockets(); // WebSocket fallback on connection issue
+      });
+    } else {
+      setupWebSockets(); // Default local offline mode
+    }
+  } catch (err) {
+    setupWebSockets();
+  }
+}, []);
+```
+
+### 2. Autonomous Log Diagnosis & LLM Prompting
+The platform analyzes standard log signatures with a heuristics engine, and triggers standard LLM calls via Gemini/OpenAI when api credentials are provided:
+```typescript
+// ai.service.ts
+public static async explainFailure(logSnippet: string, deploymentYaml?: string): Promise<ExplanationResponse> {
+  if (this.geminiApiKey) {
+    try {
+      return await this.callGeminiAPI(logSnippet, deploymentYaml);
+    } catch (err) {
+      console.error("Gemini API call failed, falling back to heuristics:", err);
+    }
+  }
+  return this.analyzeLogHeuristically(logSnippet, deploymentYaml);
+}
 ```
 
 ---
