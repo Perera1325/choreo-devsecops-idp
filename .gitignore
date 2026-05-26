@@ -45,4 +45,6 @@ yarn-error.log*
 
 # Temporary automation files
 chrome-profile/
+.firebase/
+
 

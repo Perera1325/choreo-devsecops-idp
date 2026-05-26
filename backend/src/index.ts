@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
+import { onRequest } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -302,9 +303,14 @@ wss.on('connection', (ws: WebSocket) => {
   });
 });
 
-server.listen(port, () => {
-  console.log(`================================================================`);
-  console.log(`🚀 DevSecOps IDP Backend running on http://localhost:${port}`);
-  console.log(`🔌 WebSocket service listening for metrics streams`);
-  console.log(`================================================================`);
-});
+if (!process.env.FIREBASE_CONFIG && !process.env.FUNCTIONS_EMULATOR) {
+  server.listen(port, () => {
+    console.log(`================================================================`);
+    console.log(`🚀 DevSecOps IDP Backend running on http://localhost:${port}`);
+    console.log(`🔌 WebSocket service listening for metrics streams`);
+    console.log(`================================================================`);
+  });
+}
+
+// Export the Cloud Function API trigger
+export const api = onRequest({ cors: true, timeoutSeconds: 60, memory: '256MiB' }, app);
